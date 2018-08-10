@@ -42,6 +42,15 @@ namespace ConsoleUsage
                                                                   "Hello Universe!",
                                                                   createChangeSet.Content.Sha,
                                                                   branch));
+
+            // delete file
+            await _client.Repository.Content.DeleteFile(
+                                            owner,
+                                            repo,
+                                            "C:\\AMXPERU\\file.txt",
+                                            new DeleteFileRequest("File deletion",
+                                                                  updateChangeSet.Content.Sha,
+                                                                  branch));
         }
 
         
