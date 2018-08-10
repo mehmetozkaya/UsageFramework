@@ -14,8 +14,34 @@ namespace ConsoleUsage
         public GithubManager()
         {
             _client = new GitHubClient(new ProductHeaderValue("asdasdasdf"));
-            var basicAuth = new Credentials("mehmetozkaya", "Tatg.Wp1");
-            _client.Credentials = basicAuth;
+            //var basicAuth = new Credentials("mehmetozkaya", "Tatg.Wp1");            
+            _client.Credentials = new Credentials("937023546ae6a29c04972a94f712e00ea32ea120");
+        }
+
+        public async Task CommitAsync()
+        {
+            var owner = "mehmetozkaya";
+            var repo = "UsageFramework";
+            var branch = "master";
+
+            // create file
+            var createChangeSet = await _client.Repository.Content.CreateFile(
+                                            owner,
+                                            repo,
+                                            "C:\\AMXPERU\\file.txt",
+                                            new CreateFileRequest("File creation",
+                                                                  "Hello World!",
+                                                                  branch));
+
+            // update file
+            var updateChangeSet = await _client.Repository.Content.UpdateFile(
+                                            owner,
+                                            repo,
+                                            "C:\\AMXPERU\\file.txt",
+                                            new UpdateFileRequest("File update",
+                                                                  "Hello Universe!",
+                                                                  createChangeSet.Content.Sha,
+                                                                  branch));
         }
 
         

@@ -33,6 +33,8 @@ namespace ConsoleUsage
                 var selectedRepo = github.GetRepository("UsageFra");
                 Task.WaitAll(selectedRepo);
 
+                var task = github.CommitAsync();
+                Task.WaitAll(task);
             }
             catch (Exception exception)
             {
