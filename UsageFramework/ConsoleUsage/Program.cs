@@ -13,37 +13,34 @@ namespace ConsoleUsage
         {
             try
             {
-                var client = new GitHubClient(new ProductHeaderValue("my-cool-app"));
+                var github = new GitHubClient(new ProductHeaderValue("MyAmazingApp"));
+                var user = github.User.Get("mehmetozkaya");
+                Task.WaitAll(user);
+                var uu = user.Result;
+                Console.WriteLine(uu.Followers + " folks love the half ogre!");
+
+                var client = new GitHubClient(new ProductHeaderValue("asdasdasdf"));
                 var basicAuth = new Credentials("mehmetozkaya", "Tatg.Wp1"); // NOTE: not real credentials
                 client.Credentials = basicAuth;
 
-                var user = UserDetailsAsync(client);
-                // user.Id
+                var user2 = client.User.Get("shiftkey");
+                Task.WaitAll(user2);
+
+                var user3 = client.User.Current();
+                Task.WaitAll(user3);
+
+                var apiInfo = client.GetLastApiInfo();
+                var rateLimit = apiInfo?.RateLimit;
+                var howManyRequestsCanIMakePerHour = rateLimit?.Limit;
+                var howManyRequestsDoIHaveLeft = rateLimit?.Remaining;
+                var whenDoesTheLimitReset = rateLimit?.Reset; // UTC time
+
             }
             catch (Exception exception)
             {
                 throw exception;
             }
         }
-
-        private static async Task<User> UserDetailsAsync(GitHubClient client)
-        {
-            var user = await client.User.Get("shiftkey");
-            var user2 = await client.User.Current();
-
-            return user;
-
-            Console.WriteLine("{0} has {1} public repositories - go check out their profile at {2}",
-              user.Name,
-              user.PublicRepos,
-              user.Url);
-
-            var apiInfo = client.GetLastApiInfo();
-            var rateLimit = apiInfo?.RateLimit;
-            var howManyRequestsCanIMakePerHour = rateLimit?.Limit;
-            var howManyRequestsDoIHaveLeft = rateLimit?.Remaining;
-            var whenDoesTheLimitReset = rateLimit?.Reset; // UTC time
-
-        }
+        
     }
 }
