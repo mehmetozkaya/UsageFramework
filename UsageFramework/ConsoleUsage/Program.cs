@@ -24,6 +24,15 @@ namespace ConsoleUsage
                 var issuesForRepository = github.GetIssuesForRepository("mehmetozkaya", "InterfaceActivityBuilder");
                 Task.WaitAll(issuesForRepository);
 
+                var issue = github.CreateIssue();
+                Task.WaitAll(issue);
+
+                var updated = github.UpdateIssue(1);
+                Task.WaitAll(updated);
+
+                var selectedRepo = github.GetRepository("UsageFra");
+                Task.WaitAll(selectedRepo);
+
             }
             catch (Exception exception)
             {
