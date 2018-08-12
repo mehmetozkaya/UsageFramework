@@ -1,6 +1,7 @@
 ﻿using Octokit;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,21 +15,23 @@ namespace ConsoleUsage
         public GithubManager()
         {
             _client = new GitHubClient(new ProductHeaderValue("asdasdasdf"));
-            //var basicAuth = new Credentials("mehmetozkaya", "Tatg.Wp1");            
-            _client.Credentials = new Credentials("937023546ae6a29c04972a94f712e00ea32ea120");
+            var basicAuth = new Credentials("mehmetozkaya", "Tatg.Wp1");
+
+            _client.Credentials = basicAuth;
+            //_client.Credentials = new Credentials("937023546ae6a29c04972a94f712e00ea32ea120");
         }
 
         public async Task CommitAsync()
         {
             var owner = "mehmetozkaya";
-            var repo = "UsageFramework";
+            var repo = "newGeneratedRepo";
             var branch = "master";
 
             // create file
             var createChangeSet = await _client.Repository.Content.CreateFile(
                                             owner,
                                             repo,
-                                            "C:\\AMXPERU\\file.txt",
+                                            "code.txt",
                                             new CreateFileRequest("File creation",
                                                                   "Hello World!",
                                                                   branch));
@@ -37,7 +40,7 @@ namespace ConsoleUsage
             var updateChangeSet = await _client.Repository.Content.UpdateFile(
                                             owner,
                                             repo,
-                                            "C:\\AMXPERU\\file.txt",
+                                            "code.txt",
                                             new UpdateFileRequest("File update",
                                                                   "Hello Universe!",
                                                                   createChangeSet.Content.Sha,
@@ -47,7 +50,7 @@ namespace ConsoleUsage
             await _client.Repository.Content.DeleteFile(
                                             owner,
                                             repo,
-                                            "C:\\AMXPERU\\file.txt",
+                                            "code.txt",
                                             new DeleteFileRequest("File deletion",
                                                                   updateChangeSet.Content.Sha,
                                                                   branch));
@@ -55,7 +58,7 @@ namespace ConsoleUsage
 
         
         public async Task<User> GetUserInfo(string userName)
-        {
+        {            
             var user = await _client.User.Get(userName);
             return user;
         }
@@ -77,6 +80,64 @@ namespace ConsoleUsage
             var request = new SearchRepositoriesRequest(repositoryName);
             var result = await _client.Search.SearchRepo(request);            
             return result;
+        }
+
+        public async Task<Repository> CreateRepositoryAsync(string repositoryName)
+        {
+            var isexist = GetRepository(repositoryName);
+            Task.WaitAll(isexist);
+
+            if (isexist != null)
+                return null;
+
+            var request = new NewRepository(repositoryName);
+            var result = await _client.Repository.Create(request);
+            return result;
+        }
+
+        public async Task CreateCommitAsync(string repositoryName)
+        {
+            var owner = "mehmetozkaya";
+            var repo = repositoryName;
+            var branch = "master";
+
+            // create file
+            var createChangeSet = await _client.Repository.Content.CreateFile(
+                                            owner,
+                                            repo,
+                                            "path/file.txt",
+                                            new CreateFileRequest("File creation",
+                                                                  "Hello World!",
+                                                                  branch));
+
+        }
+
+        public async Task AddLastCommitAsync(string repositoryName)
+        {
+            var owner = "mehmetozkaya";
+            var headMasterRef = $"heads/master";
+            var masterReference = await _client.Git.Reference.Get(owner, repositoryName, headMasterRef);            
+
+            var latestCommit = await _client.Git.Commit.Get(owner, repositoryName, masterReference.Object.Sha);
+
+            var imgBase64 = Convert.ToBase64String(File.ReadAllBytes("MyImage.jpg"));
+            var imgBlob = new NewBlob { Encoding = EncodingType.Base64, Content = (imgBase64) };
+            var imgBlobRef = await _client.Git.Blob.Create(owner, repositoryName, imgBlob);
+
+            var textBlob = new NewBlob { Encoding = EncodingType.Utf8, Content = "Hellow World!" };
+            var textBlobRef = await _client.Git.Blob.Create(owner, repositoryName, textBlob);
+
+            var nt = new NewTree { BaseTree = latestCommit.Tree.Sha };
+            nt.Tree.Add(new NewTreeItem { Path = "MyImage.jpg", Mode = "100644", Type = TreeType.Blob, Sha = imgBlobRef.Sha });
+            nt.Tree.Add(new NewTreeItem { Path = "HelloW.txt", Mode = "100644", Type = TreeType.Blob, Sha = textBlobRef.Sha });
+
+            var newTree = await _client.Git.Tree.Create(owner, repositoryName, nt);
+
+            // Create Commit
+            var newCommit = new NewCommit("Commit test with several files", newTree.Sha, masterReference.Object.Sha);
+            var commit = await _client.Git.Commit.Create(owner, repositoryName, newCommit);
+
+            await _client.Git.Reference.Update(owner, repositoryName, headMasterRef, new ReferenceUpdate(commit.Sha));            
         }
 
         public async Task<Issue> CreateIssue()
