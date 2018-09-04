@@ -23,37 +23,44 @@ namespace ConsoleUsage
 
         public async Task CommitAsync()
         {
-            var owner = "mehmetozkaya";
-            var repo = "newGeneratedRepo";
-            var branch = "master";
+            try
+            {
+                var owner = "mehmetozkaya";
+                var repo = "newGeneratedRepo";
+                var branch = "master";
 
-            // create file
-            var createChangeSet = await _client.Repository.Content.CreateFile(
-                                            owner,
-                                            repo,
-                                            "code.txt",
-                                            new CreateFileRequest("File creation",
-                                                                  "Hello World!",
-                                                                  branch));
+                // create file
+                var createChangeSet = await _client.Repository.Content.CreateFile(
+                                                owner,
+                                                repo,
+                                                "code.txt",
+                                                new CreateFileRequest("File creation",
+                                                                      "Hello World!",
+                                                                      branch));
 
-            // update file
-            var updateChangeSet = await _client.Repository.Content.UpdateFile(
-                                            owner,
-                                            repo,
-                                            "code.txt",
-                                            new UpdateFileRequest("File update",
-                                                                  "Hello Universe!",
-                                                                  createChangeSet.Content.Sha,
-                                                                  branch));
+                // update file
+                var updateChangeSet = await _client.Repository.Content.UpdateFile(
+                                                owner,
+                                                repo,
+                                                "code.txt",
+                                                new UpdateFileRequest("File update",
+                                                                      "Hello Universe!",
+                                                                      createChangeSet.Content.Sha,
+                                                                      branch));
 
-            // delete file
-            await _client.Repository.Content.DeleteFile(
-                                            owner,
-                                            repo,
-                                            "code.txt",
-                                            new DeleteFileRequest("File deletion",
-                                                                  updateChangeSet.Content.Sha,
-                                                                  branch));
+                // delete file
+                await _client.Repository.Content.DeleteFile(
+                                                owner,
+                                                repo,
+                                                "code.txt",
+                                                new DeleteFileRequest("File deletion",
+                                                                      updateChangeSet.Content.Sha,
+                                                                      branch));
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }            
         }
 
         
